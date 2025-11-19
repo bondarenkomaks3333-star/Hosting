@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CosmicGit Pro - Панель управления хостингом</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* БАЗОВЫЕ СТИЛИ */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root {
+            --primary: #6e44ff; --primary-light: #8b6eff; --secondary: #00d4ff; --accent: #ff6b6b;
+            --success: #2ecc71; --warning: #f39c12; --error: #e74c3c; --background: #0f0f23;
+            --surface: #1a1a2e; --surface-light: #2d2d44; --text: #e2e2e2; --text-light: #a0a0c0;
+            --border: #2a2a3e; --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        body { background: var(--background); color: var(--text); min-height: 100vh; line-height: 1.6; overflow-x: hidden; }
+        
+        /* АНИМАЦИИ */
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(110,68,255,0.3); } 50% { box-shadow: 0 0 30px rgba(110,68,255,0.6); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* КОСМИЧЕСКИЙ ФОН */
+        .cosmic-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: starTwinkle 4s infinite; }
+        @keyframes starTwinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+    </style>
+</head>
+<body>
+    <div class="cosmic-bg" id="cosmicBg"></div>
+    
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <i class="fas fa-rocket logo-icon"></i>
+                CosmicGit Pro
+            </div>
+            <div class="nav-buttons">
+                <div style="position: relative;">
+                    <button class="btn" onclick="showNotifications()">
+                        <i class="fas fa-bell"></i> Уведомления
+                    </button>
+                    <div class="notification-badge">3</div>
+                </div>
+                <button class="btn" onclick="showSettings()">
+                    <i class="fas fa-cog"></i> Настройки
+                </button>
+                <button class="btn btn-primary" onclick="createProject()">
+                    <i class="fas fa-plus"></i> Новый проект
+                </button>
+            </div>
+        </header>
+
+        <!-- ОСНОВНОЙ КОНТЕНТ БУДЕТ ЗАГРУЖЕН ДИНАМИЧЕСКИ -->
+        <div id="main-content"></div>
+    </div>
+
+    <!-- ЗАГРУЗЧИК -->
+    <div id="loader" style="display: flex; justify-content: center; align-items: center; height: 50vh;">
+        <div style="text-align: center;">
+            <div class="stat-icon" style="margin: 0 auto 20px;">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h2>Загрузка CosmicGit Pro...</h2>
+            <p>Инициализация панели управления</p>
+        </div>
+    </div>
+
+    <script>
+        // ЗАГРУЗКА СКРИПТОВ
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // ЗАГРУЗКА СТИЛЕЙ
+        function loadStyles(href) {
+            return new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                link.onload = resolve;
+                link.onerror = resolve; // Продолжаем даже если стили не загрузились
+                document.head.appendChild(link);
+            });
+        }
+
+        // ОСНОВНАЯ ЗАГРУЗКА
+        async function initializeApp() {
+            try {
+                // Загружаем дополнительные стили
+                await loadStyles('styles.css');
+                
+                // Загружаем модули
+                await loadScript('dashboard.js');
+                await loadScript('features.js');
+                await loadScript('animations.js');
+                
+                // Инициализируем приложение
+                initDashboard();
+                createStars();
+                
+                // Скрываем лоадер
+                document.getElementById('loader').style.display = 'none';
+                
+            } catch (error) {
+                console.log('Ошибка загрузки:', error);
+                // Показываем базовый интерфейс даже при ошибках
+                showBasicInterface();
+            }
+        }
+
+        // РЕЗЕРВНЫЙ ИНТЕРФЕЙС
+        function showBasicInterface() {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('main-content').innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <div class="stat-icon" style="margin: 0 auto 20px;">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h2>CosmicGit Pro</h2>
+                    <p>Панель управления хостингом</p>
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-redo"></i> Перезагрузить
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // БАЗОВЫЕ ФУНКЦИИ
+        function createStars() {
+            const cosmicBg = document.getElementById('cosmicBg');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 3 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                cosmicBg.appendChild(star);
+            }
+        }
+
+        function showNotifications() {
+            alert('🔔 У вас 3 новых уведомления\n• Система обновлена\n• Новые функции доступны\n• Резервное копирование завершено');
+        }
+
+        function showSettings() {
+            alert('⚙️ Настройки системы\nПерейдите в панель управления для детальной настройки');
+        }
+
+        function createProject() {
+            alert('🚀 Создание нового проекта\nЭта функция будет доступна после полной загрузки');
+        }
+
+        // ЗАПУСК ПРИЛОЖЕНИЯ
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+  </html>
